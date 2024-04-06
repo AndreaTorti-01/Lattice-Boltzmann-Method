@@ -184,5 +184,10 @@ Moving Ball, Reynolds 300, Inlet 0.15, Lattice 120x120 (Warning: Inaccurate Simu
 :-------------------------:
 ![moving_ball_rey300_speed0 15_120x120](https://github.com/AMSC22-23/Lattice-Boltzmann-Method-Raffaelli-Torti-Cioci/assets/74457299/fa747cd1-8b2b-4d44-ac01-9ff39edb4877)
 
+### Contributions
+- [Andrea Torti](https://github.com/AndreaTorti-01)
+- [Martina Raffaelli](https://github.com/martinaraffaelli)
+- [Marco Cioci](https://github.com/MarcoCioci)
+
 ### Credits
 This project takes inspiration from [jviquerat's lbm python code](https://github.com/jviquerat/lbm)
