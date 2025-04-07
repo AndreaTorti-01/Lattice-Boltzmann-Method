@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import sys
+import time
 
 # path to data file read from command
 file_path = sys.argv[1]
@@ -25,4 +26,7 @@ plt.plot(frames, drags, label='drag')
 plt.plot(frames, lifts, label='lift')
 plt.xlabel('frame')
 plt.legend()
-plt.savefig('outputs/lift_drag.png')
+timestr = time.strftime("%Y%m%d-%H%M%S")
+output_path = f'outputs/lift_drag-{timestr}.png'
+plt.savefig(output_path)
+print(f"Plot saved to {output_path}")

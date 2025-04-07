@@ -1,0 +1,69 @@
+@startuml LBM_Simulation_Flow
+top to bottom direction
+skinparam defaultTextAlignment center
+skinparam rectangle {
+    Shadowing false
+    BorderThickness 1
+}
+
+title Lattice-Boltzmann Method Simulation
+
+' Add spacing for clarity
+skinparam nodesep 50
+skinparam ranksep 60
+
+rectangle "Create Lattice Grid\n(D2Q9 Model for 2D)" as grid
+rectangle "Set Boundary Conditions\n(Walls, Inflow, Outflow Regions)" as boundary
+rectangle "Initialize Distribution\nFunctions f(x,t=0) for Each Cell" as fluidInit
+rectangle "GPU Execution chosen?" as gpuDecision
+
+' Memory allocation steps
+rectangle "Allocate CPU Memory\n(Cells, Distributions, Properties)" as cpuAlloc
+rectangle "Allocate GPU and Host Memory\n(CUDA Arrays, Pinned Memory)" as gpuAlloc
+
+rectangle "CPU Execution\n(OpenMP Parallel Processing)" as cpuSim
+rectangle "GPU Execution\n(Parallel CUDA Processing)" as gpuSim
+
+' Simulation steps
+rectangle "Collision Step\nf* = f - (f-f^eq)/τ\nfor Each Cell" as collision
+rectangle "Streaming Step\nf(x+c,t+1) = f*(x,t)\nfor Each Direction" as streaming
+rectangle "Boundary Handling (Zou-He)\nNo-Slip, Pressure, Velocity BCs" as boundaryHandle
+rectangle "Calculate Macroscopic Quantities\nρ = Σf_i, ν = Σ(c·f_i)/ρ\nfor Each Cell" as macroCalc
+rectangle "Calculate Physics Properties\n(Pressure on object as Drag and Lift Forces)" as physics
+rectangle "Time to Output?\n(currentStep % plotSteps == 0)" as timeCheck
+rectangle "Output to File\n(Velocity, Forces, Density Fields)" as output
+rectangle "More Frames Left?\n(currentStep < maxSteps)" as frameCheck
+rectangle "End Simulation\n(Free Memory)" as end
+
+' Create vertical flow
+grid -down-> boundary
+boundary -down-> fluidInit
+fluidInit -down-> gpuDecision
+
+' GPU/CPU path with memory allocation
+gpuDecision -down-> gpuAlloc : Yes
+gpuDecision -down-> cpuAlloc : No
+gpuAlloc -down-> gpuSim
+cpuAlloc -down-> cpuSim
+
+gpuSim -down-> collision
+cpuSim -down-> collision
+
+' Continue the vertical flow
+collision -down-> streaming
+streaming -down-> boundaryHandle
+boundaryHandle -down-> macroCalc
+macroCalc -down-> physics
+physics -down-> timeCheck
+
+' Inner loop for multiple steps per frame
+timeCheck -[#green]left-> collision : No
+timeCheck -down-> output : Yes
+
+output -down-> frameCheck
+
+' Outer loop for multiple frames
+frameCheck -[#blue]left-> collision : Yes
+frameCheck -down-> end : No
+
+@enduml

@@ -1,0 +1,101 @@
+@startuml "Lattice Boltzmann Method"
+
+skinparam classAttributeIconSize 0
+skinparam nodesep 100
+skinparam ranksep 80
+skinparam shadowing false
+skinparam class {
+  BackgroundColor white
+  ArrowColor #333333
+  BorderColor #333333
+}
+
+package "Core Components" {
+  class Cell {
+    - f : vector<float> // Distribution functions
+    - newF : vector<float> // Streamed distributions
+    - macroU : vector<float> // Macroscopic velocity
+    - rho : float // Density
+    - boundary : vector<int> // Boundary conditions
+    - obstacle : bool // Is this cell an obstacle?
+    - position : vector<int> // Position in lattice
+    
+    .. Cell Operations ..
+    + updateMacro()
+    + equilibriumCollision()
+    + streaming()
+    + bounceBackObstacle()
+  }
+
+  class Lattice {
+    - cells : NDimensionalMatrix<Cell>
+    - structure : Structure
+    - timeInstant : int
+    - problemType : int
+    - sigma, uLid, omP, omM : parameters
+    
+    .. Simulation Methods ..
+    + simulate() // CPU simulation
+    + simulateGpu() // GPU simulation
+    + getCellAtIndices()
+  }
+
+  class Structure {
+    - dimensions : int
+    
+    .. Geometry Management ..
+    + getGeometryParameters()
+    + calculateBoundaryEffects()
+  }
+}
+
+package "Data Structures & Utilities" {
+  class NDimensionalMatrix<T> {
+    - data : vector<T>
+    - shape : vector<int>
+    
+    .. Access Methods ..
+    + getElement(indices)
+    + getElementAtFlatIndex(index)
+    + getShape()
+  }
+
+  class Utils {
+    .. Helper Functions ..
+    + {static} calculateParameters()
+    + {static} visualizeResults()
+    + {static} exportData()
+  }
+}
+
+package "Computation Engines" {
+  class CPUSimulation {
+    .. Simulation Logic ..
+    + runTimestep()
+    + applyBoundaryConditions()
+  }
+
+  class GpuSimulation {
+    .. CUDA Implementation ..
+    + {static} cudaCaller()
+    + streamAndCollideKernel()
+  }
+}
+
+' Relationships
+Lattice *-- "many" Cell : contains >
+Lattice *-- "1" Structure : defines geometry >
+Lattice o-- NDimensionalMatrix : organizes cells using >
+Lattice ..> CPUSimulation : uses for simulate() >
+Lattice ..> GpuSimulation : uses for simulateGpu() >
+
+Cell --> Structure : applies boundary conditions using >
+Cell --> Lattice : accesses neighbors via >
+
+CPUSimulation --> Cell : processes >
+GpuSimulation --> Cell : processes in parallel >
+
+Utils ..> Lattice : provides helpers for >
+Utils ..> NDimensionalMatrix : contains >
+
+@enduml
